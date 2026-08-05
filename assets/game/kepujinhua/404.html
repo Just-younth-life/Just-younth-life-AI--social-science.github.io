@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <!-- 响应式视口设置 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- iOS Web App 能力设置 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <!-- iOS 状态栏样式设置 -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="white">
+  <meta name="theme-color" content="#7B6FB0">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+  <title>科学进化2048 · 社区科普小游戏</title>
+  <!-- 禁止微信自动调整字体大小，防止布局错乱 -->
+  <style>body{-webkit-text-size-adjust:100%;}</style>
+  <style>
+    :root{
+      --primary:#7B6FB0;
+      --primary-light:#9486cc;
+      --primary-dark:#635896;
+      --bg:#f7f5fc;
+      --card:#ffffff;
+      --text:#222233;
+      --text-light:#666;
+      --border:#ddd8ee;
+      --danger:#e26363;
+      --success:#48b878;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
+    body{background:var(--bg);color:var(--text);padding:12px 8px;min-height:100vh;transition: background 0.4s;}
+    .app{max-width:620px;margin:0 auto;}
+    .header{text-align:center;margin:8px 0 20px;}
+    .title{
+      font-size:34px;
+      font-weight:800;
+      color:var(--primary);
+      margin-bottom:10px;
+      letter-spacing:2px;
+      background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      display:inline-block;
+      position:relative;
+      padding-bottom:8px;
+    }
+    .title::after{
+      content:"";
+      position:absolute;
+      left:50%;bottom:0;
+      transform:translateX(-50%);
+      width:60px;height:4px;
+      background:linear-gradient(90deg,var(--primary),var(--primary-light));
+      border-radius:99px;
+    }
+    .subtitle{
+      color:var(--text-light);
+      font-size:15px;
+      font-weight:500;
+      letter-spacing:1px;
+      opacity:0.9;
+    }
+
+    .difficulty-bar{display:flex;gap:8px;margin:16px 0;}
+    .diff-btn{flex:1;padding:8px 4px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;transition:0.2s;}
+    .diff-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+    .diff-btn small{opacity:0.75;display:block;font-size:12px;}
+
+    .scoreboard{display:grid;grid-template-columns:1fr 1fr 2fr auto;gap:10px;margin-bottom:14px;align-items:center;}
+    .score-box{text-align:center;background:var(--card);padding:10px 6px;border-radius:10px;border:1px solid var(--border);}
+    .score-label{display:block;font-size:12px;color:var(--text-light);}
+    .score-value{font-size:18px;font-weight:bold;}
+    .level-box{padding:8px 10px;text-align:left;}
+    .xp-bar{width:100%;height:6px;background:#e3e0f2;border-radius:99px;margin:4px 0;}
+    .xp-fill{height:100%;background:var(--primary);border-radius:99px;width:0%;transition:0.3s;}
+    .xp-text{font-size:12px;color:var(--text-light);}
+
+    .btn{border:none;border-radius:9px;padding:9px 14px;cursor:pointer;font-size:14px;transition:.2s;}
+    .btn-primary{background:var(--primary);color:#fff;}
+    .btn-primary:hover{background:var(--primary-dark);}
+    .btn-secondary{background:#e9e5f6;color:#333;}
+
+    .progress-bar{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px;}
+    .progress-info{display:flex;justify-content:space-between;margin-bottom:6px;font-weight:500;}
+    .progress-track{width:100%;height:8px;background:#e3e0f2;border-radius:99px;}
+    .progress-fill{height:100%;background:var(--primary);border-radius:99px;width:0%;transition:.3s;}
+    .progress-hint{margin-top:6px;font-size:13px;color:var(--text-light);text-align:center;}
+
+    .board-wrap{position:relative;margin-bottom:16px;}
+    .board{background:#dcd7ee;border-radius:12px;padding:10px;display:grid;gap:8px;margin:0 auto;width:min(92vw,420px);aspect-ratio:1/1;grid-template-columns: repeat(4,1fr);}
+    .cell{
+      background:#efebf8;
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:bold;
+      font-size:clamp(22px,5vw,32px);
+      transition:.15s;
+      aspect-ratio:1/1;
+    }
+    .overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);border-radius:12px;display:flex;align-items:center;justify-content:center;}
+    .overlay-content{background:#fff;border-radius:12px;padding:24px;text-align:center;width:86%;max-width:320px;}
+    .overlay-emoji{font-size:48px;margin-bottom:10px;}
+
+    .tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;}
+    .tab-btn{white-space:nowrap;border:1px solid var(--border);background:#fff;padding:8px 10px;border-radius:8px;cursor:pointer;}
+    .tab-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+    .tab-count{font-size:12px;opacity:0.8;}
+    .tab-panel{display:none;background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;}
+    .tab-panel.active{display:block;}
+    .tab-panel h3{margin-bottom:10px;color:var(--primary);display:flex;justify-content:space-between;align-items:center;}
+    .ach-progress{font-size:14px;color:var(--text-light);font-weight:normal;}
+
+    .achievement-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:10px;margin-top:10px;}
+    .ach-item{text-align:center;padding:8px;border-radius:8px;background:#f4f1fc;}
+    .ach-item.locked{opacity:0.4;filter:grayscale(1);}
+    .leaderboard-list{margin:10px 0;}
+    .leader-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;}
+    .path-items{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+    .evo-item{padding:6px 10px;background:#f4f1fc;border-radius:6px;}
+
+    .wallpaper-select{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+    .wall-btn{width:44px;height:44px;border-radius:6px;border:2px solid transparent;cursor:pointer;}
+    .wall-btn.active{border-color:#7B6FB0;}
+
+    .footer{text-align:center;margin-top:24px;font-size:13px;color:var(--text-light);padding:10px 0;}
+
+    /* 弹窗Modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:999;}
+    .modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.65);}
+    .modal-card{position:relative;background:#fff;border-radius:14px;padding:22px;width:min(90vw,420px);z-index:2;}
+    .modal-emoji{text-align:center;font-size:46px;margin-bottom:8px;}
+    .modal-badge{text-align:center;color:var(--primary);font-weight:bold;font-size:15px;}
+    .modal-divider{height:1px;background:#ddd;margin:12px 0;}
+    .modal-fact{line-height:1.6;margin:8px 0;color:#333;}
+    .modal-meta{text-align:center;font-size:13px;color:var(--text-light);margin:6px 0;}
+    .modal-desc{color:#444;line-height:1.5;text-align:center;margin:8px 0;}
+    .modal-xp{text-align:center;color:var(--success);font-weight:bold;margin:8px 0;font-size:16px;}
+    .modal-btn{width:100%;margin-top:12px;}
+    .name-input{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin:12px 0;font-size:15px;}
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <header class="header">
+      <h1 class="title">🧬 科普进化</h1>
+      <p class="subtitle">合并万物，解锁科学小知识</p>
+    </header>
+
+    <div class="difficulty-bar" id="difficultyBar">
+      <button class="diff-btn" data-diff="easy">🌱 启蒙<br><small>5×5</small></button>
+      <button class="diff-btn active" data-diff="medium">🔬 探索<br><small>4×4</small></button>
+      <button class="diff-btn" data-diff="hard">🚀 挑战<br><small>4×4</small></button>
+    </div>
+
+    <div class="scoreboard">
+      <div class="score-box">
+        <span class="score-label">分数</span>
+        <span class="score-value" id="score">0</span>
+      </div>
+      <div class="score-box">
+        <span class="score-label">最佳</span>
+        <span class="score-value" id="best">0</span>
+      </div>
+      <div class="score-box level-box">
+        <span class="score-label">Lv.<span id="levelNum">1</span> · <span id="levelTitle">科学萌新</span></span>
+        <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+        <span class="xp-text" id="xpText">0 / 50 XP</span>
+      </div>
+      <button class="btn btn-primary" id="newGame" aria-label="重新开始">🔄 新游戏</button>
+    </div>
+
+    <div class="progress-bar" aria-label="进化进度">
+      <div class="progress-info">
+        <span id="currentTier">⚛️ 原子</span>
+        <span id="nextTier">→ 🧪 分子</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-hint" id="progressHint">🎯 目标：🤖 人工智能</div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="board" id="board" role="grid" aria-label="游戏棋盘"></div>
+      <div class="overlay" id="overlay" style="display:none;">
+        <div class="overlay-content">
+          <div class="overlay-emoji" id="overlayEmoji">🎓</div>
+          <h2 id="overlayTitle">探索结束</h2>
+          <p id="overlayText"></p>
+          <div class="overlay-stats" id="overlayStats"></div>
+          <button class="btn btn-primary" id="overlayBtn">🔄 再玩一次</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="achievements">🏆 成就 <span class="tab-count" id="achCount">0</span></button>
+      <button class="tab-btn" data-tab="leaderboard">📊 排行榜</button>
+      <button class="tab-btn" data-tab="instructions">📖 玩法</button>
+      <button class="tab-btn" data-tab="evolution">🧬 进化</button>
+      <button class="tab-btn" data-tab="wallpaper">🖼️ 壁纸</button>
+    </div>
+
+    <section class="tab-panel active" id="tab-achievements">
+      <h3>🏆 成就徽章 <span class="ach-progress" id="achProgress">0 / 21</span></h3>
+      <div class="achievement-grid" id="achievementGrid"></div>
+    </section>
+
+    <section class="tab-panel" id="tab-leaderboard">
+      <h3>📊 本地排行榜 <span class="ach-progress" id="lbCount">0</span></h3>
+      <div class="leaderboard-list" id="leaderboardList"></div>
+      <button class="btn btn-secondary" id="clearLbBtn">🗑️ 清空排行榜</button>
+    </section>
+
+    <section class="tab-panel" id="tab-instructions">
+      <h3>📖 玩法说明</h3>
+      <p>用 <strong>方向键 / WASD</strong> 或 <strong>手指滑动</strong> 控制元素移动。</p>
+      <p>两个<strong>相同的科学元素</strong>相遇会合并进化为下一阶段！</p>
+      <p>每次首次进化到新阶段，弹出<strong>趣味科普知识</strong>，边玩边学。</p>
+      <p>完成合并获得 <strong>经验值 (XP)</strong>，提升等级解锁头衔。</p>
+      <p>达成里程碑获得 <strong>成就徽章</strong>，分数进入 <strong>本地排行榜</strong>。</p>
+      <p>🎯 选择难度，完成目标进化阶段即可通关！进度自动保存。</p>
+    </section>
+
+    <section class="tab-panel" id="tab-evolution">
+      <h3>🧬 进化之路</h3>
+      <div class="path-items" id="pathItems"></div>
+    </section>
+
+    <section class="tab-panel" id="tab-wallpaper">
+      <h3>🖼️ 背景壁纸切换</h3>
+      <p>选择页面背景颜色/风格，自动保存设置</p>
+      <div class="wallpaper-select" id="wallSelect"></div>
+    </section>
+
+    <footer class="footer">
+      <p>🔬 社区科普小游戏 · 边玩边学 · 无广告无付费 · 进度自动保存</p>
+    </footer>
+  </div>
+
+  <div class="modal" id="scienceModal" style="display:none;">
+    <div class="modal-backdrop" data-close="scienceModal"></div>
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <div class="modal-emoji" id="modalEmoji">🧪</div>
+      <div class="modal-badge" id="modalBadge">🎉 新进化达成</div>
+      <h2 class="modal-title" id="modalTitle">分子</h2>
+      <div class="modal-divider"></div>
+      <p class="modal-fact" id="modalFact"></p>
+      <div class="modal-meta" id="modalMeta">阶段 2 / 13 · 化学</div>
+      <button class="btn btn-primary modal-btn" id="modalBtn">继续探索 →</button>
+    </div>
+  </div>
+
+  <div class="modal" id="achievementModal" style="display:none;">
+    <div class="modal-backdrop" data-close="achievementModal"></div>
+    <div class="modal-card ach-modal-card">
+      <div class="modal-emoji" id="achModalEmoji">🏆</div>
+      <div class="modal-badge ach-badge">🎊 成就解锁</div>
+      <h2 class="modal-title" id="achModalTitle">初次进化</h2>
+      <p class="modal-desc" id="achModalDesc">完成第一次合并</p>
+      <div class="modal-xp" id="achModalXp">+10 XP</div>
+      <button class="btn btn-primary modal-btn" id="achModalBtn">太棒了！</button>
+    </div>
+  </div>
+
+  <div class="modal" id="levelUpModal" style="display:none;">
+    <div class="modal-backdrop" data-close="levelUpModal"></div>
+    <div class="modal-card levelup-card">
+      <div class="modal-emoji">🎓</div>
+      <div class="modal-badge ach-badge">⭐ 等级提升</div>
+      <h2 class="modal-title" id="levelUpTitle">Lv.2 好奇少年</h2>
+      <p class="modal-desc">你的科学探索之路更进一层！</p>
+      <button class="btn btn-primary modal-btn" id="levelUpBtn">继续探索</button>
+    </div>
+  </div>
+
+  <div class="modal" id="nameModal" style="display:none;">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <div class="modal-emoji">🏅</div>
+      <div class="modal-badge ach-badge">🎉 进入排行榜</div>
+      <h2 class="modal-title">恭喜上榜！</h2>
+      <p class="modal-desc" id="nameModalDesc"></p>
+      <input type="text" class="name-input" id="nameInput" placeholder="输入你的名字（最多10字）" maxlength="10">
+      <button class="btn btn-primary modal-btn" id="nameModalBtn">确认上榜</button>
+    </div>
+  </div>
+
+<script>
+// ===================== DATA 进化配置 =====================
+const EVOLUTION_DATA = [
+  {emoji:"⚛️",name:"原子",fact:"原子是化学反应不可再分的最小微粒。"},
+  {emoji:"🧪",name:"分子",fact:"分子由多个原子依靠化学键结合形成。"},
+  {emoji:"🧬",name:"DNA",fact:"脱氧核糖核酸，承载生物遗传信息。"},
+  {emoji:"🦠",name:"单细胞生物",fact:"单个细胞就能完成全部生命活动。"},
+  {emoji:"🌱",name:"植物",fact:"依靠光合作用将光能转化为化学能。"},
+  {emoji:"🐟",name:"海洋生物",fact:"地球上最早复杂生命诞生于海洋。"},
+  {emoji:"🦖",name:"古生物",fact:"恐龙统治地球长达1.6亿年。"},
+  {emoji:"🐒",name:"哺乳动物",fact:"依靠胎生哺乳养育后代。"},
+  {emoji:"🧍",name:"人类",fact:"人类依靠大脑发展复杂文明与工具。"},
+  {emoji:"🔭",name:"科学理论",fact:"科学理论依靠反复实验验证猜想。"},
+  {emoji:"⚙️",name:"工业机械",fact:"机器延伸人类体力，推动工业化。"},
+  {emoji:"💻",name:"计算机",fact:"依靠二进制运算处理海量信息。"},
+  {emoji:"🤖",name:"人工智能",fact:"AI可以模拟人类感知、推理、学习。"},
+];
+const LEVEL_TITLES = [
+  "科学萌新","好奇少年","探索者","实验员","研究员",
+  "工程师","科学家","思想者","先驱","科学巨匠"
+];
+//成就列表
+const ACHIEVEMENT_LIST = [
+  {id:"first_merge",icon:"✨",title:"初次进化",desc:"完成第一次合并",xp:10},
+  {id:"reach_molecule",icon:"🧪",title:"走进化学",desc:"进化到分子阶段",xp:15},
+  {id:"reach_dna",icon:"🧬",title:"生命密码",desc:"进化到DNA阶段",xp:20},
+  {id:"reach_ai",icon:"🤖",title:"终极目标",desc:"进化到人工智能",xp:100},
+  {id:"score_500",icon:"📈",title:"小有收获",desc:"单局分数达到500",xp:25},
+  {id:"score_2000",icon:"🏅",title:"资深探索者",desc:"单局分数达到2000",xp:40},
+];
+//壁纸配置
+const WALLPAPERS = [
+  {name:"默认",bg:"#f7f5fc"},
+  {name:"浅蓝",bg:"#f0f6fc"},
+  {name:"薄荷",bg:"#f0fcf6"},
+  {name:"暖杏",bg:"#fcf5f0"},
+  {name:"暗夜",bg:"#222233",text:"#eeeeee"}
+];
+// ===================== GAME 基础变量 =====================
+let grid = [];
+let size = 4;
+let score = 0;
+let bestScore = 0;
+let xp = 0;
+let level = 1;
+let currentTierIndex = 0;
+let touchX=0,touchY=0;
+let difficultyMode = "medium";
+let unlockedAchievements = [];
+let leaderboardData = [];
+let currentWallpaper = 0;
+let popedTierCache = []; // 本局已经弹出科普的阶段，防止重复弹窗
+
+const boardEl = document.getElementById("board");
+const scoreEl = document.getElementById("score");
+const bestEl = document.getElementById("best");
+const scienceModal = document.getElementById("scienceModal");
+const modalEmoji = document.getElementById("modalEmoji");
+const modalTitle = document.getElementById("modalTitle");
+const modalFact = document.getElementById("modalFact");
+const modalMeta = document.getElementById("modalMeta");
+const overlay = document.getElementById("overlay");
+const overlayTitle = document.getElementById("overlayTitle");
+const overlayText = document.getElementById("overlayText");
+const overlayStats = document.getElementById("overlayStats");
+
+// 读取本地存储
+function loadStorage(){
+  const save = localStorage.getItem("science2048_save");
+  if(save){
+    const data = JSON.parse(save);
+    bestScore = data.best||0;
+    xp = data.xp||0;
+    level = data.lv||1;
+    unlockedAchievements = data.achs||[];
+    currentWallpaper = data.wall||0;
+  }
+  const lb = localStorage.getItem("science2048_rank");
+  if(lb) leaderboardData = JSON.parse(lb);
+  bestEl.textContent = bestScore;
+  renderWallpaper();
+}
+function saveStorage(){
+  const data = {
+    best:bestScore,
+    xp:xp,
+    lv:level,
+    achs:unlockedAchievements,
+    wall:currentWallpaper
+  };
+  localStorage.setItem("science2048_save",JSON.stringify(data));
+  localStorage.setItem("science2048_rank",JSON.stringify(leaderboardData));
+}
+
+// Tab切换逻辑
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.onclick = ()=>{
+    const tabId = btn.dataset.tab;
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-"+tabId).classList.add("active");
+    if(tabId==="achievements") renderAchievements();
+    if(tabId==="evolution") renderEvolutionPath();
+    if(tabId==="leaderboard") renderLeaderboard();
+    if(tabId==="wallpaper") renderWallSelector();
+  }
+})
+
+// 难度切换
+document.querySelectorAll(".diff-btn").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll(".diff-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    difficultyMode = btn.dataset.diff;
+    if(difficultyMode==="easy") size=5;
+    else size=4;
+    initGame();
+  }
+})
+
+document.getElementById("newGame").onclick = initGame;
+document.getElementById("overlayBtn").onclick = initGame;
+document.getElementById("modalBtn").onclick = ()=>{
+  scienceModal.style.display = "none";
+};
+document.getElementById("clearLbBtn").onclick = ()=>{
+  leaderboardData = [];
+  saveStorage();
+  renderLeaderboard();
+}
+
+// 初始化游戏
+function initGame(){
+  score = 0;
+  scoreEl.textContent=0;
+  grid = Array(size).fill().map(()=>Array(size).fill(0));
+  spawnCell();
+  spawnCell();
+  overlay.style.display = "none";
+  popedTierCache = []; // 新游戏重置弹窗记录
+  renderBoard();
+}
+
+// 随机生成格子 hard模式降低高级方块概率
+function spawnCell(){
+  const empty = [];
+  for(let i=0;i<size;i++)for(let j=0;j<size;j++)if(grid[i][j]===0)empty.push([i,j]);
+  if(!empty.length)return false;
+  const [r,c] = empty[Math.floor(Math.random()*empty.length)];
+  let val = 1;
+  if(difficultyMode==="hard"){
+    const rand = Math.random();
+    val = rand<0.12 ? 2 : 1;
+  }else{
+    const rand = Math.random();
+    val = rand<0.2 ? 2 :1;
+  }
+  grid[r][c]=val;
+  return true;
+}
+
+// 渲染棋盘
+function renderBoard(){
+  boardEl.style.gridTemplateColumns = `repeat(${size},1fr)`;
+  boardEl.innerHTML="";
+  for(let i=0;i<size;i++){
+    for(let j=0;j<size;j++){
+      const cell = document.createElement("div");
+      cell.className="cell";
+      const val = grid[i][j];
+      if(val>0){
+        const tier = EVOLUTION_DATA[Math.min(val-1,EVOLUTION_DATA.length-1)];
+        cell.textContent = tier.emoji;
+      }
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+// 合并单行核心方法
+function slideRow(row){
+  let arr = row.filter(v=>v!==0);
+  let addScore = 0;
+  let newEvolve = false;
+  for(let i=0;i<arr.length-1;i++){
+    if(arr[i] === arr[i+1]){
+      arr[i]++;
+      addScore += 10;
+      newEvolve = true;
+      arr.splice(i+1,1);
+    }
+  }
+  while(arr.length < size) arr.push(0);
+  return {newRow:arr,addScore,newEvolve};
+}
+
+// 显示科普弹窗
+function showSciencePop(index){
+  const item = EVOLUTION_DATA[index];
+  modalEmoji.textContent = item.emoji;
+  modalTitle.textContent = item.name;
+  modalFact.textContent = item.fact;
+  modalMeta.textContent = `阶段 ${index+1} / ${EVOLUTION_DATA.length}`;
+  scienceModal.style.display = "flex";
+  checkAchievement("first_merge");
+  // 阶段成就判断
+  if(index === 1) checkAchievement("reach_molecule");
+  if(index === 2) checkAchievement("reach_dna");
+  if(index === 12) checkAchievement("reach_ai");
+}
+
+// 成就解锁
+function checkAchievement(achId){
+  const ach = ACHIEVEMENT_LIST.find(x=>x.id===achId);
+  if(!ach)return;
+  if(unlockedAchievements.includes(achId))return;
+  unlockedAchievements.push(achId);
+  xp += ach.xp;
+  checkLevelUp();
+  saveStorage();
+  //弹出成就弹窗
+  document.getElementById("achModalEmoji").textContent = ach.icon;
+  document.getElementById("achModalTitle").textContent = ach.title;
+  document.getElementById("achModalDesc").textContent = ach.desc;
+  document.getElementById("achModalXp").textContent = `+${ach.xp} XP`;
+  document.getElementById("achievementModal").style.display="flex";
+}
+document.getElementById("achModalBtn").onclick = ()=>{
+  document.getElementById("achievementModal").style.display="none";
+}
+
+//等级升级
+function checkLevelUp(){
+  const needXp = level*50;
+  if(xp >= needXp && level<LEVEL_TITLES.length){
+    level++;
+    const modal = document.getElementById("levelUpModal");
+    document.getElementById("levelUpTitle").textContent = `Lv.${level} ${LEVEL_TITLES[level-1]}`;
+    modal.style.display="flex";
+  }
+  updateXPUI();
+}
+document.getElementById("levelUpBtn").onclick = ()=>{
+  document.getElementById("levelUpModal").style.display="none";
+}
+function updateXPUI(){
+  const needXp = level*50;
+  const prevNeed = (level-1)*50;
+  const progress = ((xp-prevNeed)/(needXp-prevNeed))*100;
+  document.getElementById("xpFill").style.width = Math.min(progress,100)+"%";
+  document.getElementById("xpText").textContent = `${xp} / ${needXp} XP`;
+  document.getElementById("levelNum").textContent = level;
+  document.getElementById("levelTitle").textContent = LEVEL_TITLES[Math.min(level-1,LEVEL_TITLES.length-1)];
+}
+
+// 棋盘旋转
+function rotateGrid(g){
+  let n = g.length;
+  let res = Array(n).fill().map(()=>Array(n).fill(0));
+  for(let i=0;i<n;i++){
+    for(let j=0;j<n;j++){
+      res[j][n-1-i] = g[i][j];
+    }
+  }
+  return res;
+}
+
+// 判断是否还有可移动空间（游戏结束检测）
+function canMove(){
+  for(let i=0;i<size;i++){
+    for(let j=0;j<size;j++){
+      if(grid[i][j]===0) return true;
+      //左右
+      if(j+1<size && grid[i][j]===grid[i][j+1]) return true;
+      //上下
+      if(i+1<size && grid[i][j]===grid[i+1][j]) return true;
+    }
+  }
+  return false;
+}
+
+// 移动逻辑（修复科普弹窗触发+防重复）
+function move(direction){
+  if(!direction)return;
+  let moved = false;
+  let addTotal = 0;
+  let tempGrid = JSON.parse(JSON.stringify(grid));
+  let triggerEvolvePopup = false;
+
+  // 旋转处理方向，统一向左滑动
+  if(direction === "up") tempGrid = rotateGrid(rotateGrid(rotateGrid(tempGrid)));
+  if(direction === "right") tempGrid = rotateGrid(rotateGrid(tempGrid));
+  if(direction === "down") tempGrid = rotateGrid(tempGrid);
+
+  // 每行向左合并
+  for(let r=0;r<size;r++){
+    const res = slideRow(tempGrid[r]);
+    if(JSON.stringify(tempGrid[r]) !== JSON.stringify(res.newRow)){
+      moved = true;
+      tempGrid[r] = res.newRow;
+      addTotal += res.addScore;
+      if(res.newEvolve) triggerEvolvePopup = true;
+    }
+  }
+
+  // 旋转还原
+  if(direction === "up") tempGrid = rotateGrid(tempGrid);
+  if(direction === "right") tempGrid = rotateGrid(rotateGrid(tempGrid));
+  if(direction === "down") tempGrid = rotateGrid(rotateGrid(rotateGrid(tempGrid)));
+
+  if(moved){
+    grid = tempGrid;
+    score += addTotal;
+    scoreEl.textContent = score;
+    if(score>bestScore){
+      bestScore = score;
+      bestEl.textContent = bestScore;
+    }
+    spawnCell();
+    renderBoard();
+
+    // ==========检测最高进化等级，控制弹窗==========
+    let highestTier = 0;
+    for(let i=0;i<size;i++){
+      for(let j=0;j<size;j++){
+        if(grid[i][j] > highestTier) highestTier = grid[i][j];
+      }
+    }
+    const tierIndex = Math.min(highestTier - 1, EVOLUTION_DATA.length - 1);
+    // 条件：发生合并 && 当前阶段本局还没弹过
+    if(triggerEvolvePopup && !popedTierCache.includes(tierIndex)){
+      popedTierCache.push(tierIndex); // 标记已弹出
+      setTimeout(()=>{
+        showSciencePop(tierIndex);
+      },250);
+    }
+
+    setTimeout(()=>{
+      if(!canMove()) gameOver();
+    },100);
+  }
+}
+
+//游戏结束弹窗
+function gameOver(){
+  overlay.style.display = "flex";
+  overlayTitle.textContent = "探索结束！";
+  overlayText.textContent = "棋盘无法继续移动";
+  overlayStats.textContent = `本局得分：${score}｜历史最高：${bestScore}`;
+  //弹出上榜输入框
+  setTimeout(()=>{
+    document.getElementById("nameModalDesc").textContent = `本局分数：${score}`;
+    document.getElementById("nameModal").style.display="flex";
+  },600);
+}
+document.getElementById("nameModalBtn").onclick = ()=>{
+  const name = document.getElementById("nameInput").value.trim() || "匿名探索者";
+  leaderboardData.push({name,score,time:Date.now()});
+  leaderboardData.sort((a,b)=>b.score-a.score);
+  leaderboardData = leaderboardData.slice(0,10);
+  saveStorage();
+  document.getElementById("nameModal").style.display="none";
+  document.getElementById("nameInput").value = "";
+}
+
+//渲染进化之路面板
+function renderEvolutionPath(){
+  const wrap = document.getElementById("pathItems");
+  wrap.innerHTML="";
+  EVOLUTION_DATA.forEach(item=>{
+    const div = document.createElement("div");
+    div.className="evo-item";
+    div.textContent = `${item.emoji} ${item.name}`;
+    wrap.appendChild(div);
+  })
+}
+
+//渲染成就面板
+function renderAchievements(){
+  const wrap = document.getElementById("achievementGrid");
+  wrap.innerHTML="";
+  ACHIEVEMENT_LIST.forEach(ach=>{
+    const div = document.createElement("div");
+    div.className = "ach-item "+(unlockedAchievements.includes(ach.id)?"":"locked");
+    div.innerHTML = `<div style="font-size:26px">${ach.icon}</div><div style="font-size:12px;margin-top:4px">${ach.title}</div>`;
+    wrap.appendChild(div);
+  })
+  document.getElementById("achCount").textContent = unlockedAchievements.length;
+  document.getElementById("achProgress").textContent = `${unlockedAchievements.length} / ${ACHIEVEMENT_LIST.length}`;
+}
+
+//渲染排行榜
+function renderLeaderboard(){
+  const wrap = document.getElementById("leaderboardList");
+  wrap.innerHTML="";
+  if(leaderboardData.length===0){
+    wrap.innerHTML="<p>暂无记录，快来挑战！</p>";
+  }else{
+    leaderboardData.forEach((item,idx)=>{
+      const div = document.createElement("div");
+      div.className="leader-item";
+      div.innerHTML = `<span>${idx+1}. ${item.name}</span><span>${item.score}分</span>`;
+      wrap.appendChild(div);
+    })
+  }
+  document.getElementById("lbCount").textContent = leaderboardData.length;
+}
+
+//壁纸渲染
+function renderWallpaper(){
+  const wall = WALLPAPERS[currentWallpaper];
+  document.body.style.background = wall.bg;
+  if(wall.text) document.body.style.color = wall.text;
+  else document.body.style.color = "#222233";
+}
+function renderWallSelector(){
+  const wrap = document.getElementById("wallSelect");
+  wrap.innerHTML="";
+  WALLPAPERS.forEach((w,idx)=>{
+    const btn = document.createElement("button");
+    btn.className = "wall-btn "+(idx===currentWallpaper?"active":"");
+    btn.style.background = w.bg;
+    btn.title = w.name;
+    btn.onclick = ()=>{
+      currentWallpaper = idx;
+      renderWallpaper();
+      saveStorage();
+      renderWallSelector();
+    }
+    wrap.appendChild(btn);
+  })
+}
+
+// 键盘监听
+document.addEventListener("keydown",e=>{
+  let dir = "";
+  if(["ArrowUp","w","W"].includes(e.key)) dir="up";
+  if(["ArrowDown","s","S"].includes(e.key)) dir="down";
+  if(["ArrowLeft","a","A"].includes(e.key)) dir="left";
+  if(["ArrowRight","d","D"].includes(e.key)) dir="right";
+  if(dir) {
+    e.preventDefault();
+    move(dir);
+  }
+})
+
+// 触屏滑动
+boardEl.addEventListener("touchstart",e=>{
+  touchX=e.touches[0].clientX;
+  touchY=e.touches[0].clientY;
+})
+boardEl.addEventListener("touchend",e=>{
+  const dx = e.changedTouches[0].clientX-touchX;
+  const dy = e.changedTouches[0].clientY-touchY;
+  if(Math.abs(dx)>Math.abs(dy)){
+    move(dx>30?"right":dx<-30?"left":"");
+  }else{
+    move(dy>30?"down":dy<-30?"up":"");
+  }
+})
+
+// 点击 modal 背景关闭弹窗（data-close 属性处理）
+document.querySelectorAll("[data-close]").forEach(el=>{
+  el.onclick = ()=>{
+    const id = el.dataset.close;
+    document.getElementById(id).style.display = "none";
+  }
+})
+
+// ESC 键关闭所有弹窗
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
+  }
+})
+
+// 启动
+loadStorage();
+initGame();
+updateXPUI();
+renderEvolutionPath();
+renderAchievements();
+renderLeaderboard();
+renderWallSelector();
+</script>
+</body>
+</html>
