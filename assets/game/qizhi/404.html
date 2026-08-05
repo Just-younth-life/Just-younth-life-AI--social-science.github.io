@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#66BB6A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>启知 · 科普游戏</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- LXGW WenKai 行楷字体（SIL OFL 1.1 开源） -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css" media="all">
+</head>
+<body class="theme-general">
+    <!-- 背景层 -->
+    <div id="bgLayer"></div>
+
+    <!-- Toast 提示 -->
+    <div id="toast"></div>
+
+    <!-- 反馈层 -->
+    <div id="feedbackLayer"></div>
+
+    <!-- 拼图解锁弹窗层 -->
+    <div id="puzzleOverlay"></div>
+
+    <!-- 分享编辑器弹窗层 -->
+    <div id="shareOverlay"></div>
+
+    <!-- 排行榜网名编辑弹窗层 -->
+    <div id="rankOverlay"></div>
+
+    <div class="app-container">
+        <!-- 顶部栏 -->
+        <header class="top-bar">
+            <div class="brand">
+                <div>
+                    <div class="brand-name">启知</div>
+                    <div class="brand-sub">你的生活科普社区</div>
+                </div>
+            </div>
+            <button class="btn-profile" id="btnProfile" aria-label="个人中心">👤</button>
+        </header>
+
+        <!-- 年龄段切换 -->
+        <nav class="audience-tabs" id="audienceTabs">
+            <button class="aud-tab active" data-audience="general">🌈 通用</button>
+            <button class="aud-tab" data-audience="youth">🧒 青少年</button>
+            <button class="aud-tab" data-audience="middle">💼 中青年</button>
+            <button class="aud-tab" data-audience="elderly">👴 老年</button>
+        </nav>
+
+        <!-- 吉祥物 -->
+        <section class="mascot-section">
+            <div id="mascotWrap"></div>
+            <div class="greeting-text">
+                今日已连续打卡 <span class="streak" id="streakDays">1</span> 天 · 
+                累计完成 <span class="streak" id="completedCount">0</span> 次
+            </div>
+        </section>
+
+        <!-- 主页面 -->
+        <main>
+            <!-- 首页 -->
+            <section class="page active" data-page="home">
+                <!-- 任务卡片 -->
+                <div class="card task-card" id="cardMain">
+                    <!-- 动态渲染 -->
+                </div>
+
+                <!-- 彩蛋卡片 -->
+                <div class="egg-card" id="eggCard">
+                    <!-- 动态渲染 -->
+                </div>
+
+                <!-- 统计快览 -->
+                <div class="home-stats">
+                    <div class="stat-box">
+                        <div class="stat-num" id="userLevel">Lv.1</div>
+                        <div class="stat-label">当前等级</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-num" id="userExp">0 经验</div>
+                        <div class="stat-label">可用余额</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-num" id="streakDays2">1</div>
+                        <div class="stat-label">连续天数</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 发现页 · 知识碎片拼图 + 分享广场 -->
+            <section class="page" data-page="discover">
+                <div id="puzzleContainer"></div>
+                <div id="shareContainer"></div>
+            </section>
+
+            <!-- 排行榜页 -->
+            <section class="page" data-page="rank">
+                <div id="rankContainer"></div>
+            </section>
+
+            <!-- 个人中心页（原弹窗改为页面）-->
+            <section class="page" data-page="profile" id="profilePage">
+                <div class="profile-container">
+                    <!-- 用户卡片 -->
+                    <div class="user-card">
+                        <h3>启知用户</h3>
+                        <p id="profileLevel">Lv.1 科普新手</p>
+                        <div class="exp-bar">
+                            <div class="exp-bar-inner" id="profileExpBar"></div>
+                        </div>
+                        <div class="exp-progress" id="profileExpProgress">0 / 10 EXP</div>
+                    </div>
+
+                    <!-- 福利兑换 -->
+                    <div class="section-title">🎁 福利兑换（可用经验：<span id="profileUserExp">0</span>）</div>
+                    <div class="welfare-list" id="profileWelfareList"></div>
+
+                    <!-- 历史记录 -->
+                    <div class="section-title">📋 最近完成</div>
+                    <div class="history-list" id="profileHistoryList"></div>
+
+                    <!-- 统计数据 -->
+                    <div class="section-title">📊 使用数据</div>
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="num" id="profileStatOpens">0</div>
+                            <div class="label">累计打开</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="num" id="profileStatRefresh">0</div>
+                            <div class="label">任务刷新</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="num" id="profileStatComplete">0</div>
+                            <div class="label">完成次数</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="num" id="profileStatSkip">0</div>
+                            <div class="label">跳过次数</div>
+                        </div>
+                    </div>
+
+                    <!-- 错题复盘模块 -->
+                    <div class="section-title" style="margin-top: 24px;">📚 错题复盘</div>
+                    <div id="errorReviewPanel"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-page="home">
+            <span class="nav-icon">🎯</span>
+            <span class="nav-label">任务</span>
+        </button>
+        <button class="nav-item" data-page="discover">
+            <span class="nav-icon">🧬</span>
+            <span class="nav-label">合成</span>
+        </button>
+        <button class="nav-item" data-page="rank">
+            <span class="nav-icon">🏆</span>
+            <span class="nav-label">排行</span>
+        </button>
+        <button class="nav-item" data-page="profile" id="btnProfileNav">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">我的</span>
+        </button>
+    </nav>
+
+    <!-- 脚本加载 -->
+    <script src="js/mascot.js"></script>
+    <script src="js/backgrounds.js"></script>
+    <script src="js/decorations.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/error-review/error-store.js"></script>
+    <script src="js/error-review/error-renderer.js"></script>
+    <script src="js/error-review/error-charts.js"></script>
+    <script src="js/puzzle/chengdu-map.js"></script>
+    <script src="js/puzzle/puzzle-engine.js"></script>
+    <script src="js/share/share-engine.js"></script>
+    <script src="js/rank/rank-engine.js"></script>
+    <script src="js/verification.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
