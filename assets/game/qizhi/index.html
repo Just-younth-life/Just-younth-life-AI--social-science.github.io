@@ -7,8 +7,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>启知 · 科普游戏</title>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- LXGW WenKai 行楷字体（SIL OFL 1.7.0 开源） -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- LXGW WenKai 行楷字体（SIL OFL 1.1 开源） -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css" media="all">
 </head>
 <body class="theme-general">
@@ -39,11 +39,11 @@
                     <div class="brand-sub">你的生活科普社区</div>
                 </div>
             </div>
-            <!-- 移除右上角个人头像按钮，统一使用底部导航我的页面 -->
+            <button class="btn-profile" id="btnProfile" aria-label="个人中心">👤</button>
         </header>
 
         <!-- 年龄段切换 -->
-        <nav class="audience-tabs" id="audienceTabs" ontouchmove="event.stopPropagation()">
+        <nav class="audience-tabs" id="audienceTabs">
             <button class="aud-tab active" data-audience="general">🌈 通用</button>
             <button class="aud-tab" data-audience="youth">🧒 青少年</button>
             <button class="aud-tab" data-audience="middle">💼 中青年</button>
@@ -171,19 +171,19 @@
         </button>
     </nav>
 
-    <!-- 脚本加载 -->
-    <script src="js/mascot.js"></script>
-    <script src="js/backgrounds.js"></script>
-    <script src="js/decorations.js"></script>
-    <script src="js/tasks.js"></script>
-    <script src="js/error-review/error-store.js"></script>
-    <script src="js/error-review/error-renderer.js"></script>
-    <script src="js/error-review/error-charts.js"></script>
-    <script src="js/puzzle/chengdu-map.js"></script>
-    <script src="js/puzzle/puzzle-engine.js"></script>
-    <script src="js/share/share-engine.js"></script>
-    <script src="js/rank/rank-engine.js"></script>
-    <script src="js/verification.js"></script>
-    <script src="js/app.js"></script>
+    <!-- 脚本加载，全部补全 assets/ 路径 -->
+    <script src="assets/js/mascot.js"></script>
+    <script src="assets/js/backgrounds.js"></script>
+    <script src="assets/js/decorations.js"></script>
+    <script src="assets/js/tasks.js"></script>
+    <script src="assets/js/error-review/error-store.js"></script>
+    <script src="assets/js/error-review/error-renderer.js"></script>
+    <script src="assets/js/error-review/error-charts.js"></script>
+    <script src="assets/js/puzzle/chengdu-map.js"></script>
+    <script src="assets/js/puzzle/puzzle-engine.js"></script>
+    <script src="assets/js/share/share-engine.js"></script>
+    <script src="assets/js/rank/rank-engine.js"></script>
+    <script src="assets/js/verification.js"></script>
+    <script src="assets/js/app.js"></script>
 </body>
 </html>
