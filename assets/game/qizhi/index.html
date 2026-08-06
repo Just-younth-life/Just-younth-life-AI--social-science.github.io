@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>启知 · 科普游戏</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- LXGW WenKai 行楷字体（SIL OFL 1.1 开源） -->
+    <!-- LXGW WenKai 行楷字体（SIL OFL 1.7.0 开源） -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css" media="all">
 </head>
 <body class="theme-general">
@@ -39,11 +39,11 @@
                     <div class="brand-sub">你的生活科普社区</div>
                 </div>
             </div>
-            <button class="btn-profile" id="btnProfile" aria-label="个人中心">👤</button>
+            <!-- 移除右上角个人头像按钮，统一使用底部导航我的页面 -->
         </header>
 
         <!-- 年龄段切换 -->
-        <nav class="audience-tabs" id="audienceTabs">
+        <nav class="audience-tabs" id="audienceTabs" ontouchmove="event.stopPropagation()">
             <button class="aud-tab active" data-audience="general">🌈 通用</button>
             <button class="aud-tab" data-audience="youth">🧒 青少年</button>
             <button class="aud-tab" data-audience="middle">💼 中青年</button>
